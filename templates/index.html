@@ -59,23 +59,35 @@
     </div>
 
     <script>
-        var socket = io.connect(location.protocol + "//" + document.domain + ":" + location.port);
+        var socket = io.connect(location.protocol + "//" + document.domain + ":" + location.port, {
+            transports: ['websocket']
+        });
+
+        function appendMessage(msg) {
+            var msgBox = document.getElementById("messages");
+            var newMessage = document.createElement("p");
+            newMessage.textContent = msg.timestamp + " - " + msg.message;
+            msgBox.appendChild(newMessage);
+            msgBox.scrollTop = msgBox.scrollHeight;  // Auto-scroll to latest message
+        }
 
         socket.on('load_messages', function(messages) {
-            var msgBox = document.getElementById("messages");
             messages.forEach(function(msg) {
-                msgBox.innerHTML += "<p>" + msg.message + "</p>";
+                appendMessage(msg);
             });
         });
 
         socket.on('message', function(msg) {
-            document.getElementById("messages").innerHTML += "<p>" + msg.message + "</p>";
+            appendMessage(msg);
         });
 
         function sendMessage() {
-            var msg = document.getElementById("messageInput").value;
-            socket.send(msg);
-            document.getElementById("messageInput").value = "";
+            var msgInput = document.getElementById("messageInput");
+            var msg = msgInput.value.trim();
+            if (msg) {
+                socket.emit('message', msg);
+                msgInput.value = "";
+            }
         }
     </script>
 </body>
