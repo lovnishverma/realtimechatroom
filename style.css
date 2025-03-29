@@ -4,7 +4,7 @@
 body {
   width: 100vw;
   height: 100vh;
-   background-image: url("https://cdn.glitch.global/35c781f5-767f-4a78-aa05-514a7470d366/upscaled_image.jpg?v=1743267868876");
+   background-image: url("https://cdn.glitch.global/35c781f5-767f-4a78-aa05-514a7470d366/85917368354.jpg?v=1743268828784");
 	 background-repeat: no-repeat;
    background-size:100%;
    padding: 20px;
@@ -35,6 +35,7 @@ body {
   transform: translate(-50%, -50%);
   overflow: hidden;
   background-image: linear-gradient(to top right, #f9a743, #f9db5f);
+   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.7);
 }
 @media screen and (max-height: 500px) {
   .center {
