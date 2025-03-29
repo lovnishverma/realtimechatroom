@@ -60,7 +60,7 @@
 
     <script>
         var socket = io.connect(location.protocol + "//" + document.domain + ":" + location.port, {
-            transports: ['websocket']
+            transports: ["websocket", "polling"]
         });
 
         function appendMessage(msg) {
@@ -68,7 +68,7 @@
             var newMessage = document.createElement("p");
             newMessage.textContent = msg.timestamp + " - " + msg.message;
             msgBox.appendChild(newMessage);
-            msgBox.scrollTop = msgBox.scrollHeight;  // Auto-scroll to latest message
+            msgBox.scrollTop = msgBox.scrollHeight;
         }
 
         socket.on('load_messages', function(messages) {

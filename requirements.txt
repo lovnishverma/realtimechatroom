@@ -1,6 +1,1 @@
-Flask
-datetime
-pymongo[srv]
-Flask-PyMongo
-pytz
-eventlet
+flask
