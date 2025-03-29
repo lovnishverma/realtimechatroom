@@ -4,22 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anonymous Chat</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
     <style>
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: rgba(0, 0, 0, 0.5);
             color: white;
-        }
-        #video-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
         }
         #chat-container {
             width: 50%;
@@ -47,10 +38,6 @@
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="video-bg">
-        <source src="https://cdn.glitch.global/35c781f5-767f-4a78-aa05-514a7470d366/Black%20Ash%20Grey%20Video-centric%20Element%20Centric%20Mobile%20Video%20Background.mp4?v=1743282479791" type="video/mp4">
-    </video>
-
     <div id="chat-container">
         <h2>Anonymous Chat</h2>
         <div id="messages"></div>
@@ -60,7 +47,7 @@
 
     <script>
         var socket = io.connect(location.protocol + "//" + document.domain + ":" + location.port, {
-            transports: ["websocket", "polling"]
+            transports: ['websocket', 'polling']
         });
 
         function appendMessage(msg) {
@@ -68,7 +55,7 @@
             var newMessage = document.createElement("p");
             newMessage.textContent = msg.timestamp + " - " + msg.message;
             msgBox.appendChild(newMessage);
-            msgBox.scrollTop = msgBox.scrollHeight;
+            msgBox.scrollTop = msgBox.scrollHeight;  
         }
 
         socket.on('load_messages', function(messages) {
