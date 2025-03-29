@@ -31,11 +31,11 @@ body {
   display: inline-block;
   width: 275px;
   height: 490px;
-  border-radius: 3px;
+  border-radius: 15px;
   transform: translate(-50%, -50%);
   overflow: hidden;
   background-image: linear-gradient(to top right, #f9a743, #f9db5f);
-   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.7);
+   box-shadow: 0px 0px 10px rgba(0, 0, 0.7, 0.7);
 }
 @media screen and (max-height: 500px) {
   .center {
