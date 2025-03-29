@@ -8,14 +8,14 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'btechkartik_secret_key'
+app.config['SECRET_KEY'] = 'kartik_super_secret_key'
 
 socketio = SocketIO(app, async_mode='gevent')
 
 # Connect to MongoDB Atlas
 MONGO_URI = "mongodb+srv://test:test@cluster0.sxci1.mongodb.net/chatDB?retryWrites=true&w=majority"
 client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-db = client['kartikchatDB']
+db = client['kartikdarkchatDB']
 messages_collection = db['messages']
 
 IST = pytz.timezone('Asia/Kolkata')
@@ -45,20 +45,24 @@ def handle_connect():
                 except Exception as e:
                     print("Error parsing timestamp:", e)
                     msg['timestamp'] = "Unknown"
-        
+
         emit('load_messages', past_messages)
     except Exception as e:
         print("MongoDB Connection Error:", e)
 
 @socketio.on('message')
 def handle_message(data):
-    """Store messages in MongoDB and broadcast."""
+    """Store messages with nickname in MongoDB and broadcast."""
+    nickname = data.get('nickname', 'Anonymous')
+    message_text = data.get('message', '')
+    
     utc_now = datetime.utcnow()
     utc_now = pytz.utc.localize(utc_now)
     ist_now = utc_now.astimezone(IST)
 
     message_doc = {
-        'message': data,
+        'nickname': nickname,
+        'message': message_text,
         'timestamp': utc_now  # Store in UTC
     }
     inserted_doc = messages_collection.insert_one(message_doc)

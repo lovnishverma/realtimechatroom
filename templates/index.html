@@ -62,6 +62,9 @@
             <button id="theme-toggle" class="btn btn-light"><i class="fas fa-moon"></i></button>
         </div>
         <div id="messages" class="p-3 mb-3 rounded"></div>
+        <div class="input-group mb-2">
+            <input id="nicknameInput" type="text" class="form-control" placeholder="Enter your nickname..." />
+        </div>
         <div class="input-group">
             <input id="messageInput" type="text" class="form-control" placeholder="Type a message..." />
             <button class="btn btn-primary" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
@@ -73,10 +76,18 @@
             transports: ['websocket', 'polling']
         });
 
+        function getNickname() {
+            return localStorage.getItem("nickname") || "Anonymous";
+        }
+
+        document.getElementById("nicknameInput").addEventListener("change", function() {
+            localStorage.setItem("nickname", this.value.trim() || "Anonymous");
+        });
+
         function appendMessage(msg) {
             var msgBox = document.getElementById("messages");
             var newMessage = document.createElement("p");
-            newMessage.textContent = msg.timestamp + " - " + msg.message;
+            newMessage.textContent = msg.timestamp + " - " + msg.nickname + ": " + msg.message;
             msgBox.appendChild(newMessage);
             msgBox.scrollTop = msgBox.scrollHeight;
         }
@@ -94,8 +105,9 @@
         function sendMessage() {
             var msgInput = document.getElementById("messageInput");
             var msg = msgInput.value.trim();
+            var nickname = getNickname();
             if (msg) {
-                socket.emit('message', msg);
+                socket.emit('message', { message: msg, nickname: nickname });
                 msgInput.value = "";
             }
         }
