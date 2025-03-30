@@ -160,13 +160,28 @@ socket.on('message', (msg) => {
 });
 
 socket.on("ban_notification", function (data) {
-    if (data && data.message) {
-        banText.textContent = `${data.message}  Don't use Abusive Language`;
-        banMessage.style.display = "block";
+    console.log("🚨 Received ban notification:", data);
+
+    let banText = document.getElementById("ban-text");
+    let banMessage = document.getElementById("ban-message");
+
+    if (banText && banMessage) {
+        console.log("✅ Ban message elements found in DOM.");
+        banText.textContent = `${data.message} Don't use Abusive Language`;
+        banMessage.classList.add("show");
     } else {
-        banMessage.style.display = "none";
+        console.warn("❌ Ban message elements not found in the DOM.");
     }
 });
+
+// Ensure the ban message is hidden when the page loads
+document.addEventListener("DOMContentLoaded", function () {
+    let banMessage = document.getElementById("ban-message");
+    if (banMessage) {
+        banMessage.classList.remove("show");
+    }
+});
+
 
 socket.on('typing', (data) => {
     if (data.nickname !== getNickname()) {

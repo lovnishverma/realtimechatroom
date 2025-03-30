@@ -400,24 +400,37 @@
         }
 
 #ban-message {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    color: red !important;
-    background: rgba(255, 0, 0, 0.5) !important;
+    display: none !important; /* Hidden by default */
+    opacity: 0; /* Fully transparent */
+    visibility: hidden; /* Completely hidden */
+    color: red !important; /* Red text when shown */
+    background: transparent !important; /* Fully transparent */
+    border: none !important; /* No border */
 }
 
-
-
+/* When the ban is triggered, only the text appears, no background */
+#ban-message.show {
+    display: block !important; /* Make it appear */
+    opacity: 1; /* Fully visible */
+    visibility: visible;
+    color: red !important; /* Show text */
+    background: transparent !important; /* No background */
+}
 
 .ban-notice {
-    background: rgba(255, 0, 0, 0.2);
-    padding: 10px;
-    border: 1px solid red;
-    text-align: center;
-    margin-bottom: 10px;
+    display: none; /* Hide by default */
+    position: fixed; /* Fix position to center */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center it */
+    text-align: center; /* Center text */
+    background: transparent !important; /* No background */
+    border: none !important; /* No border */
     font-weight: bold;
-    color: red;
-    display: none;
-    border-radius: 5px;
+    color: red !important; /* Show red text when needed */
+}
+
+/* Show only text when ban is triggered */
+.ban-notice.show {
+    display: block !important; /* Make it visible */
 }
