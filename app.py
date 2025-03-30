@@ -62,10 +62,11 @@ def handle_connect():
 def handle_message(data):
     session_id = request.sid
     if is_user_banned(session_id):
+        print("User", session_id, "is banned. Sending notification...")
         emit('ban_notification', {
             'message': 'You are temporarily banned.',
             'remaining': get_ban_remaining_time(session_id)
-        })
+        }, room=session_id)  #Emit only to the banned user
         return
     nickname = data.get('nickname', 'Anonymous')
     message_text = data.get('message', '')
@@ -103,6 +104,15 @@ def ban_user(session_id, nickname):
         'reason': 'Abusive language'
     })
     print("User banned:", nickname, "Session ID:", session_id, "until", ban_until)
+
+    # Emit the ban notification to the specific user
+    socketio.emit("ban_notification", {
+        "message": "You have been banned for 24 hours.",
+        "remaining": "24 hours"
+    }, room=session_id)  #Specify the room
+
+    print("Ban notification emitted to session", session_id)
+
 
 def is_user_banned(session_id):
     now = datetime.utcnow()

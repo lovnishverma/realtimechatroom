@@ -153,21 +153,21 @@ socket.on('message', (msg) => {
     }
 });
 
-socket.on('ban_notification', (data) => {
+socket.on("ban_notification", function (data) {
     console.log("🚨 Received ban notification:", data);
+
+    let banText = document.getElementById("ban-text");
     let banMessage = document.getElementById("ban-message");
-    if (!banMessage) {
-        banMessage = document.createElement("div");
-        banMessage.id = "ban-message";
-        banMessage.style.background = "red";
-        banMessage.style.color = "white";
-        banMessage.style.padding = "10px";
-        banMessage.style.borderRadius = "5px";
-        document.body.appendChild(banMessage);
+
+    if (banText && banMessage) {
+        console.log("✅ Ban message elements found in DOM.");
+        banText.textContent = `${data.message} Remaining: ${data.remaining}`;
+        banMessage.style.display = "block";
+    } else {
+        console.warn("❌ Ban message elements not found in the DOM.");
     }
-    banMessage.textContent = `${data.message} Remaining: ${data.remaining}`;
-    setTimeout(() => banMessage.style.display = "none", 5000);
 });
+
 
 socket.on('typing', (data) => {
     if (data.nickname !== getNickname()) {
