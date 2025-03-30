@@ -8,13 +8,13 @@ import time
 import re
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'kartik_super_secret_key'
+app.config['SECRET_KEY'] = 'superduper_secret_key'
 socketio = SocketIO(app, async_mode='gevent')
 
 # MongoDB setup
 MONGO_URI = "mongodb+srv://test:test@cluster0.sxci1.mongodb.net/chatDB?retryWrites=true&w=majority"
 client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-db = client['kartikdarkchatDB']
+db = client['realtimechatDB']
 messages_collection = db['messages']
 banned_users_collection = db['banned_users']
 
@@ -22,7 +22,7 @@ banned_users_collection = db['banned_users']
 IST = pytz.timezone('Asia/Kolkata')
 
 # Abusive words list
-ABUSIVE_WORDS = ['fudu', 'makelode', 'chutiye', 'gandu', 'maderchod', 'fuck']
+ABUSIVE_WORDS = ['motherfucker', 'fuck']
 ABUSIVE_PATTERN = re.compile(r'\b(' + '|'.join(ABUSIVE_WORDS) + r')\b', re.IGNORECASE)
 
 @app.route('/')
