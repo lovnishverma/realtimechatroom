@@ -13,6 +13,8 @@ const emojiBtn = document.getElementById("emoji-btn");
 const emojiPicker = document.getElementById("emoji-picker");
 const backgroundWrapper = document.getElementById("background-wrapper");
 const typingIndicator = document.querySelector(".typing-indicator");
+const banMessage = document.getElementById("ban-message");
+const banText = document.getElementById("ban-text");
 
 // App state
 let isTyping = false;
@@ -25,6 +27,7 @@ function init() {
     loadNickname();
     setupEventListeners();
     messageInput.focus();
+    banMessage.style.display = "none"; // Ensure the ban message is hidden initially
 }
 
 // Create floating particles
@@ -139,7 +142,10 @@ function sendMessage() {
 }
 
 // Socket events
-socket.on('connect', () => console.log('Connected to server'));
+socket.on('connect', () => {
+    console.log('Connected to server');
+    banMessage.style.display = "none";
+});
 
 socket.on('load_messages', (messages) => {
     messagesContainer.innerHTML = '';
@@ -154,20 +160,13 @@ socket.on('message', (msg) => {
 });
 
 socket.on("ban_notification", function (data) {
-    console.log("🚨 Received ban notification:", data);
-
-    let banText = document.getElementById("ban-text");
-    let banMessage = document.getElementById("ban-message");
-
-    if (banText && banMessage) {
-        console.log("✅ Ban message elements found in DOM.");
-        banText.textContent = `${data.message} Remaining: ${data.remaining}`;
+    if (data && data.message) {
+        banText.textContent = `${data.message}  Don't use Abusive Language`;
         banMessage.style.display = "block";
     } else {
-        console.warn("❌ Ban message elements not found in the DOM.");
+        banMessage.style.display = "none";
     }
 });
-
 
 socket.on('typing', (data) => {
     if (data.nickname !== getNickname()) {
