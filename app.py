@@ -32,12 +32,17 @@ def index():
 @socketio.on('connect')
 def handle_connect():
     session_id = request.sid
+    print("User connected:", session_id)
+
     if is_user_banned(session_id):
+        remaining_time = get_ban_remaining_time(session_id)
+        print("User", session_id, "is banned. Emitting ban_notification...")
         emit('ban_notification', {
             'message': 'You are temporarily banned.',
-            'remaining': get_ban_remaining_time(session_id)
-        }, room=session_id)  # Ensure it's only sent to the banned user
+            'remaining': remaining_time
+        }, room=request.sid)
         return
+
     past_messages = list(messages_collection.find({}).sort('timestamp', 1))
     for msg in past_messages:
         msg['_id'] = str(msg['_id'])
