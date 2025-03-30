@@ -229,6 +229,20 @@
             }
         });
 
+socket.on('ban_notification', function(data) {
+    if (data.message) {
+        alert(data.message + (data.remaining ? "\nRemaining time: " + data.remaining : ""));
+        
+        // Disable message input and sending
+        document.getElementById("messageInput").disabled = true;
+        document.getElementById("send-btn").disabled = true;
+        document.getElementById("change-nickname-btn").disabled = true;
+    }
+});
+
+
+
+
         // For future implementation:
         socket.on('typing', function(data) {
             if (data.nickname !== getNickname()) {

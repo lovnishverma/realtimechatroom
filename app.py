@@ -11,14 +11,17 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'kartik_super_secret_key'
 socketio = SocketIO(app, async_mode='gevent')
 
+# MongoDB setup
 MONGO_URI = "mongodb+srv://test:test@cluster0.sxci1.mongodb.net/chatDB?retryWrites=true&w=majority"
 client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
 db = client['kartikdarkchatDB']
 messages_collection = db['messages']
 banned_users_collection = db['banned_users']
 
+# Timezone setup
 IST = pytz.timezone('Asia/Kolkata')
 
+# Abusive words list
 ABUSIVE_WORDS = ['fudu', 'makelode', 'chutiye', 'gandu', 'maderchod', 'fuck']
 ABUSIVE_PATTERN = re.compile(r'\b(' + '|'.join(ABUSIVE_WORDS) + r')\b', re.IGNORECASE)
 
@@ -28,72 +31,81 @@ def index():
 
 @socketio.on('connect')
 def handle_connect():
-    client_ip = request.remote_addr
-    if is_user_banned(client_ip):
-        emit('ban_notification', {'message': 'You are temporarily banned.', 'remaining': get_ban_remaining_time(client_ip)})
+    session_id = request.sid
+    if is_user_banned(session_id):
+        emit('ban_notification', {
+            'message': 'You are temporarily banned.',
+            'remaining': get_ban_remaining_time(session_id)
+        }, room=session_id)  # Ensure it's only sent to the banned user
         return
-    
     past_messages = list(messages_collection.find({}).sort('timestamp', 1))
-    
     for msg in past_messages:
         msg['_id'] = str(msg['_id'])
-        
         if 'timestamp' in msg:
             try:
                 if isinstance(msg['timestamp'], str):
                     msg['timestamp'] = datetime.strptime(msg['timestamp'], '%Y-%m-%d %H:%M:%S')
-
-                # If it's still naive, make it UTC aware
                 if msg['timestamp'].tzinfo is None:
                     msg['timestamp'] = pytz.utc.localize(msg['timestamp'])
-
-                # Convert to IST
-                ist_time = msg['timestamp'].astimezone(IST)
-                msg['timestamp'] = ist_time.strftime("%d-%m-%Y %I:%M:%S %p")
+                msg['timestamp'] = msg['timestamp'].astimezone(IST).strftime("%d-%m-%Y %I:%M:%S %p")
             except Exception as e:
                 print("Error parsing timestamp:", e)
                 msg['timestamp'] = "Unknown"
-    
     emit('load_messages', past_messages)
-
 
 @socketio.on('message')
 def handle_message(data):
-    client_ip = request.remote_addr
-    if is_user_banned(client_ip):
-        emit('ban_notification', {'message': 'You are temporarily banned.', 'remaining': get_ban_remaining_time(client_ip)})
+    session_id = request.sid
+    if is_user_banned(session_id):
+        emit('ban_notification', {
+            'message': 'You are temporarily banned.',
+            'remaining': get_ban_remaining_time(session_id)
+        })
         return
-    
     nickname = data.get('nickname', 'Anonymous')
     message_text = data.get('message', '')
-    
     if contains_abusive_words(message_text):
-        ban_user(client_ip, nickname)
+        ban_user(session_id, nickname)
         emit('ban_notification', {'message': 'You have been banned for 24 hours.'})
         return
-    
     utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
     ist_now = utc_now.astimezone(IST)
-    message_doc = {'nickname': nickname, 'message': message_text, 'timestamp': utc_now, 'ip': client_ip}
+    message_doc = {
+        'nickname': nickname,
+        'message': message_text,
+        'timestamp': utc_now,
+        'session_id': session_id
+    }
     inserted_doc = messages_collection.insert_one(message_doc)
-    broadcast_doc = {'_id': str(inserted_doc.inserted_id), 'nickname': nickname, 'message': message_text, 'timestamp': ist_now.strftime("%d-%m-%Y %I:%M:%S %p")}
+    broadcast_doc = {
+        '_id': str(inserted_doc.inserted_id),
+        'nickname': nickname,
+        'message': message_text,
+        'timestamp': ist_now.strftime("%d-%m-%Y %I:%M:%S %p")
+    }
     emit('message', broadcast_doc, broadcast=True)
 
 def contains_abusive_words(message):
     return bool(ABUSIVE_PATTERN.search(message))
 
-def ban_user(ip, nickname):
+def ban_user(session_id, nickname):
     ban_until = datetime.utcnow() + timedelta(hours=24)
-    banned_users_collection.insert_one({'ip': ip, 'nickname': nickname, 'banned_at': datetime.utcnow(), 'ban_until': ban_until, 'reason': 'Abusive language'})
-    print("User banned:", nickname, "IP:", ip, "until", ban_until)
+    banned_users_collection.insert_one({
+        'session_id': session_id,
+        'nickname': nickname,
+        'banned_at': datetime.utcnow(),
+        'ban_until': ban_until,
+        'reason': 'Abusive language'
+    })
+    print("User banned:", nickname, "Session ID:", session_id, "until", ban_until)
 
-def is_user_banned(ip):
+def is_user_banned(session_id):
     now = datetime.utcnow()
-    return bool(banned_users_collection.find_one({'ip': ip, 'ban_until': {'$gt': now}}))
+    return bool(banned_users_collection.find_one({'session_id': session_id, 'ban_until': {'$gt': now}}))
 
-def get_ban_remaining_time(ip):
+def get_ban_remaining_time(session_id):
     now = datetime.utcnow()
-    ban_record = banned_users_collection.find_one({'ip': ip, 'ban_until': {'$gt': now}})
+    ban_record = banned_users_collection.find_one({'session_id': session_id, 'ban_until': {'$gt': now}})
     if ban_record:
         remaining = ban_record['ban_until'] - now
         hours, minutes = divmod(int(remaining.total_seconds() / 60), 60)
@@ -118,7 +130,7 @@ def clear_chat_at_midnight():
 
 if __name__ == '__main__':
     chat_clear_thread = threading.Thread(target=clear_chat_at_midnight)
-    chat_clear_thread.daemon = True  # Set the thread as daemon
+    chat_clear_thread.daemon = True  # Set as daemon manually
     chat_clear_thread.start()
 
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
