@@ -41,7 +41,7 @@ def handle_connect():
                         msg['timestamp'] = pytz.utc.localize(msg['timestamp'])
 
                     ist_time = msg['timestamp'].astimezone(IST)
-                    msg['timestamp'] = ist_time.strftime("%d-%m-%Y %I:%M %p")  # Desired date time format
+                    msg['timestamp'] = ist_time.strftime("%d-%m-%Y %I:%M:%S %p")  # Desired date time format
                 except Exception as e:
                     print("Error parsing timestamp:", e)
                     msg['timestamp'] = "Unknown"
@@ -68,7 +68,7 @@ def handle_message(data):
     inserted_doc = messages_collection.insert_one(message_doc)
 
     message_doc['_id'] = str(inserted_doc.inserted_id)
-    message_doc['timestamp'] = ist_now.strftime("%d-%m-%Y %I:%M %p")
+    message_doc['timestamp'] = ist_now.strftime("%d-%m-%Y %I:%M:%S %p")
 
     emit('message', message_doc, broadcast=True)
 

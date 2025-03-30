@@ -1,124 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Anonymous Chat</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
-        }
-        #background-video {
-            position: fixed;
-            right: 0;
-            bottom: 0;
-            min-width: 100%;
-            min-height: 100%;
-            z-index: -1;
-            object-fit: cover;
-        }
-        #chat-container {
-            max-width: 600px;
-            margin: 5% auto;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 10px;
-            color: white;
-        }
-        #messages {
-            height: 300px;
-            overflow-y: scroll;
-            border: 1px solid #ccc;
-            padding: 10px;
-            background: white;
-            color: black;
-        }
-        .theme-light #chat-container {
-            background: rgba(255, 255, 255, 0.9);
-            color: black;
-        }
-        .theme-light #messages {
-            background: black;
-            color: white;
-        }
+      body {
+        margin: 0;
+        font-family: "Poppins", sans-serif;
+        transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+      }
+      #background-video {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        min-width: 100%;
+        min-height: 100%;
+        z-index: -1;
+        object-fit: cover;
+        filter: brightness(0.6);
+      }
+      #chat-container {
+        max-width: 500px;
+        margin: 5% auto;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        border-radius: 15px;
+        color: white;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+      #messages {
+        height: 350px;
+        overflow-y: auto;
+        border-radius: 10px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.9);
+        color: black;
+        display: flex;
+        flex-direction: column;
+      }
+      .message {
+        padding: 8px 12px;
+        border-radius: 10px;
+        margin: 5px 0;
+        max-width: 75%;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .message.sent {
+        background: #007bff;
+        color: white;
+        align-self: flex-end;
+      }
+      .message.received {
+        background: #e5e5e5;
+        color: black;
+        align-self: flex-start;
+      }
+      .message .meta {
+        font-size: 0.8em;
+        opacity: 0.7;
+        margin-bottom: 2px;
+      }
     </style>
-</head>
-<body class="theme-dark">
+  </head>
+  <body class="theme-dark">
     <video id="background-video" autoplay loop muted>
-        <source src="https://cdn.glitch.global/35c781f5-767f-4a78-aa05-514a7470d366/Black%20Ash%20Grey%20Video-centric%20Element%20Centric%20Mobile%20Video%20Background.mp4?v=1743282479791" type="video/mp4">
-        Your browser does not support the video tag.
+      <source
+        src="https://cdn.glitch.global/35c781f5-767f-4a78-aa05-514a7470d366/Black%20Ash%20Grey%20Video-centric%20Element%20Centric%20Mobile%20Video%20Background.mp4?v=1743282479791"
+        type="video/mp4"
+      />
+      Your browser does not support the video tag.
     </video>
-    
-    <div id="chat-container" class="p-4 shadow-lg">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2><i class="fas fa-comments"></i> Anonymous Chat</h2>
-            <button id="theme-toggle" class="btn btn-light"><i class="fas fa-moon"></i></button>
-        </div>
-        <div id="messages" class="p-3 mb-3 rounded"></div>
-        <div class="input-group mb-2">
-            <input id="nicknameInput" type="text" class="form-control" placeholder="Enter your nickname..." />
-        </div>
-        <div class="input-group">
-            <input id="messageInput" type="text" class="form-control" placeholder="Type a message..." />
-            <button class="btn btn-primary" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
-        </div>
+
+    <div id="chat-container" class="p-4 shadow-lg d-flex flex-column">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h4><i class="fas fa-comments"></i> Anonymous Chat</h4>
+        <button id="theme-toggle" class="btn-toggle">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+      <div id="messages" class="p-3 mb-3"></div>
+      <input
+        id="nicknameInput"
+        type="text"
+        class="form-control mb-2"
+        placeholder="Enter nickname..."
+      />
+      <div class="input-group">
+        <input
+          id="messageInput"
+          type="text"
+          class="form-control"
+          placeholder="Type a message..."
+        />
+        <button class="btn btn-primary" onclick="sendMessage()">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
     </div>
 
     <script>
-        var socket = io.connect(location.protocol + "//" + document.domain + ":" + location.port, {
-            transports: ['websocket', 'polling']
-        });
-
-        function getNickname() {
-            return localStorage.getItem("nickname") || "Anonymous";
+      var socket = io.connect(
+        location.protocol + "//" + document.domain + ":" + location.port,
+        {
+          transports: ["websocket", "polling"],
         }
+      );
 
-        document.getElementById("nicknameInput").addEventListener("change", function() {
-            localStorage.setItem("nickname", this.value.trim() || "Anonymous");
+      function getNickname() {
+        return localStorage.getItem("nickname") || "Anonymous";
+      }
+
+      document
+        .getElementById("nicknameInput")
+        .addEventListener("change", function () {
+          localStorage.setItem("nickname", this.value.trim() || "Anonymous");
         });
 
-        function appendMessage(msg) {
-            var msgBox = document.getElementById("messages");
-            var newMessage = document.createElement("p");
-            newMessage.textContent = msg.timestamp + " - " + msg.nickname + ": " + msg.message;
-            msgBox.appendChild(newMessage);
-            msgBox.scrollTop = msgBox.scrollHeight;
+      function appendMessage(msg, type) {
+        var msgBox = document.getElementById("messages");
+        var newMessage = document.createElement("div");
+        newMessage.classList.add(
+          "message",
+          type === "sent" ? "sent" : "received"
+        );
+        newMessage.innerHTML = `
+                <div class="meta"><strong>${msg.nickname}</strong> • ${msg.timestamp}</div>
+                <div>${msg.message}</div>
+            `;
+        msgBox.appendChild(newMessage);
+        msgBox.scrollTop = msgBox.scrollHeight;
+      }
+
+      socket.on("load_messages", function (messages) {
+        messages.forEach(function (msg) {
+          appendMessage(msg, "received");
+        });
+      });
+
+      socket.on("message", function (msg) {
+        appendMessage(msg, "received");
+      });
+
+      function sendMessage() {
+        var msgInput = document.getElementById("messageInput");
+        var msg = msgInput.value.trim();
+        var nickname = getNickname();
+        if (msg) {
+          socket.emit("message", { message: msg, nickname: nickname });
+          msgInput.value = "";
         }
-
-        socket.on('load_messages', function(messages) {
-            messages.forEach(function(msg) {
-                appendMessage(msg);
-            });
-        });
-
-        socket.on('message', function(msg) {
-            appendMessage(msg);
-        });
-
-        function sendMessage() {
-            var msgInput = document.getElementById("messageInput");
-            var msg = msgInput.value.trim();
-            var nickname = getNickname();
-            if (msg) {
-                socket.emit('message', { message: msg, nickname: nickname });
-                msgInput.value = "";
-            }
-        }
-
-        document.getElementById("theme-toggle").addEventListener("click", function() {
-            document.body.classList.toggle("theme-light");
-            document.body.classList.toggle("theme-dark");
-            var icon = this.querySelector("i");
-            icon.classList.toggle("fa-moon");
-            icon.classList.toggle("fa-sun");
+      }
+p
+      document
+        .getElementById("theme-toggle")
+        .addEventListener("click", function () {
+          document.body.classList.toggle("theme-light");
+          document.body.classList.toggle("theme-dark");
+          var icon = this.querySelector("i");
+          icon.classList.toggle("fa-moon");
+          icon.classList.toggle("fa-sun");
         });
     </script>
-</body>
+  </body>
 </html>
