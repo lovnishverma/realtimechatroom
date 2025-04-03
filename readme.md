@@ -26,8 +26,8 @@ Ensure you have the following installed:
 ### Steps to Run
 1. Clone this repository:
    ```bash
-   git clone https://github.com/lovnishverma/nielit-anonymous-chat.git
-   cd nielit-anonymous-chat
+   git clone https://github.com/lovnishverma/realtimechatroom.git
+   cd realtimechatroom
    ```
 2. Create a virtual environment and install dependencies:
    ```bash
