@@ -52,3 +52,4 @@ Werkzeug==1.0.1
 yarg==0.1.10
 zope.event==4.6
 zope.interface==5.5.2
+gunicorn
