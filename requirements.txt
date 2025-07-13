@@ -7,4 +7,5 @@ gevent-websocket==0.10.1
 greenlet==0.4.15
 pymongo==3.7.2
 pytz==2021.1
+dnspython==1.16.0
 gunicorn
